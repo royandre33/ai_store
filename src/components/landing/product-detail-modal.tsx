@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, X, Star } from "lucide-react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
@@ -8,7 +8,6 @@ import { cn } from "@/lib/utils";
 import { useCartStore } from "@/store/cart-store";
 import toast from "react-hot-toast";
 import type { Product } from "@/types/product";
-import { ADMIN_WA } from "@/data/admin-number";
 
 interface ProductDetailModalProps {
   product: Product | null;
@@ -26,6 +25,13 @@ export function ProductDetailModal({
   const [isZoomed, setIsZoomed] = useState(false);
   const [zoomOrigin, setZoomOrigin] = useState("center center");
   const { addItem, items, openCartToCheckout } = useCartStore();
+  const [adminWa, setAdminWa] = useState("6289530571642");
+
+  useEffect(() => {
+    fetch("/api/cms/settings")
+      .then((r) => r.json())
+      .then((data) => { if (data?.adminWhatsapp) setAdminWa(data.adminWhatsapp); });
+  }, []);
 
   if (!product) return null;
 
@@ -80,7 +86,7 @@ export function ProductDetailModal({
     if (selectedVariant === null) return null;
     const variant = product.variants[selectedVariant];
     const message = `Halo, saya ingin menanyakan produk ${product.name} - variant ${variant.label}.`;
-    return `https://wa.me/${ADMIN_WA}?text=${encodeURIComponent(message)}`;
+    return `https://wa.me/${adminWa}?text=${encodeURIComponent(message)}`;
   };
 
   const prevImg = (e: React.MouseEvent) => {

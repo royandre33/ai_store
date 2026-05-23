@@ -25,6 +25,12 @@ import { useCartStore } from "@/store/cart-store";
 import type { CartItem, BuyerInfo } from "@/store/cart-store";
 import { PAYMENT_METHODS } from "@/data/payment-methods";
 import type { PaymentMethod } from "@/data/payment-methods";
+import type { CmsPaymentMethod } from "@/types/cms";
+
+type CombinedPaymentMethod = PaymentMethod & Partial<Omit<CmsPaymentMethod, "steps">> & {
+  steps?: Array<string | { text: string }>;
+};
+
 
 function formatRupiah(n: number) {
   return `Rp ${n.toLocaleString("id-ID")}`;
@@ -74,8 +80,12 @@ function CartItemRow({ item }: { item: CartItem }) {
 
 // ── Payment detail components ─────────────────────────────────────────────────
 
-function BankTransferDetail({ method }: { method: PaymentMethod }) {
-  const d = method.bankDetails!;
+function BankTransferDetail({ method }: { method: CombinedPaymentMethod }) {
+  const d = method.bankDetails || method;
+  const steps = Array.isArray(method.steps)
+    ? method.steps.map((s: string | { text: string }) => typeof s === "string" ? s : s.text)
+    : (method.bankDetails?.steps || []);
+
   return (
     <div className='space-y-4'>
       <div>
@@ -117,34 +127,40 @@ function BankTransferDetail({ method }: { method: PaymentMethod }) {
           </div>
         </div>
       </div>
-      <div>
-        <p className='mb-2 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-foreground'>
-          <ClipboardList className='h-4 w-4' /> Cara Transfer:
-        </p>
-        <ol className='space-y-1.5'>
-          {d.steps.map((step, i) => (
-            <li
-              key={i}
-              className='flex gap-2 text-xs font-light text-muted-foreground'
-            >
-              <span className='shrink-0 font-semibold text-foreground'>
-                {i + 1}.
-              </span>
-              {step}
-            </li>
-          ))}
-        </ol>
-        <p className='mt-3 flex items-start gap-1.5 border-l-2 border-(--accent) pl-3 text-[10px] font-light text-muted-foreground'>
-          <AlertTriangle className='mt-px h-4 w-4 shrink-0' />
-          Transfer sesuai nominal exact, jangan lebih atau kurang.
-        </p>
-      </div>
+      {steps.length > 0 && (
+        <div>
+          <p className='mb-2 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-foreground'>
+            <ClipboardList className='h-4 w-4' /> Cara Transfer:
+          </p>
+          <ol className='space-y-1.5'>
+            {steps.map((step: string, i: number) => (
+              <li
+                key={i}
+                className='flex gap-2 text-xs font-light text-muted-foreground'
+              >
+                <span className='shrink-0 font-semibold text-foreground'>
+                  {i + 1}.
+                </span>
+                {step}
+              </li>
+            ))}
+          </ol>
+          <p className='mt-3 flex items-start gap-1.5 border-l-2 border-(--accent) pl-3 text-[10px] font-light text-muted-foreground'>
+            <AlertTriangle className='mt-px h-4 w-4 shrink-0' />
+            Transfer sesuai nominal exact, jangan lebih atau kurang.
+          </p>
+        </div>
+      )}
     </div>
   );
 }
 
-function WalletDetail({ method }: { method: PaymentMethod }) {
-  const d = method.walletDetails!;
+function WalletDetail({ method }: { method: CombinedPaymentMethod }) {
+  const d = method.walletDetails || method;
+  const steps = Array.isArray(method.steps)
+    ? method.steps.map((s: string | { text: string }) => typeof s === "string" ? s : s.text)
+    : (method.walletDetails?.steps || []);
+
   return (
     <div className='space-y-4'>
       <div>
@@ -170,24 +186,26 @@ function WalletDetail({ method }: { method: PaymentMethod }) {
           </div>
         </div>
       </div>
-      <div>
-        <p className='mb-2 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-foreground'>
-          <ClipboardList className='h-4 w-4' /> Cara Transfer:
-        </p>
-        <ol className='space-y-1.5'>
-          {d.steps.map((step, i) => (
-            <li
-              key={i}
-              className='flex gap-2 text-xs font-light text-muted-foreground'
-            >
-              <span className='shrink-0 font-semibold text-foreground'>
-                {i + 1}.
-              </span>
-              {step}
-            </li>
-          ))}
-        </ol>
-      </div>
+      {steps.length > 0 && (
+        <div>
+          <p className='mb-2 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-foreground'>
+            <ClipboardList className='h-4 w-4' /> Cara Transfer:
+          </p>
+          <ol className='space-y-1.5'>
+            {steps.map((step: string, i: number) => (
+              <li
+                key={i}
+                className='flex gap-2 text-xs font-light text-muted-foreground'
+              >
+                <span className='shrink-0 font-semibold text-foreground'>
+                  {i + 1}.
+                </span>
+                {step}
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
     </div>
   );
 }
@@ -266,10 +284,31 @@ function CheckoutFormView() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [paymentMethods, setPaymentMethods] = useState<CombinedPaymentMethod[]>([]);
+  const [loadingPayments, setLoadingPayments] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/cms/payments")
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setPaymentMethods(data);
+        } else {
+          setPaymentMethods(PAYMENT_METHODS);
+        }
+        setLoadingPayments(false);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch payments:", err);
+        setPaymentMethods(PAYMENT_METHODS);
+        setLoadingPayments(false);
+      });
+  }, []);
+
   const { goToInvoice, backToCart, items } = useCartStore();
   const total = items.reduce((s, i) => s + i.price, 0);
   const selectedPayment =
-    PAYMENT_METHODS.find((p) => p.id === paymentId) ?? null;
+    paymentMethods.find((p) => p.id === paymentId) ?? null;
 
   const handleFileSelect = useCallback((file: File) => {
     const allowed = ["image/jpeg", "image/png", "application/pdf"];
@@ -307,7 +346,7 @@ function CheckoutFormView() {
     setErrors({});
 
     try {
-      const pm = PAYMENT_METHODS.find((p) => p.id === paymentId)!;
+      const pm = paymentMethods.find((p) => p.id === paymentId)!;
       
       const orderData = {
         invoiceNumber: `INV-${Date.now()}`,
@@ -464,40 +503,52 @@ function CheckoutFormView() {
           )}
 
           <div className='mt-3 grid grid-cols-4 gap-1.5'>
-            {PAYMENT_METHODS.map((pm) => (
-              <button
-                key={pm.id}
-                onClick={() => {
-                  setPaymentId(pm.id);
-                  if (errors.payment)
-                    setErrors((er) => ({ ...er, payment: "" }));
-                }}
-                className={cn(
-                  "relative flex flex-col items-center gap-1 border p-2 transition-colors",
-                  paymentId === pm.id
-                    ? "border-foreground bg-foreground/5"
-                    : "border-border hover:border-foreground/50",
-                )}
-              >
-                {paymentId === pm.id && (
-                  <span className='absolute right-0.5 top-0.5 flex h-3 w-3 items-center justify-center bg-(--accent)'>
-                    <Check className='h-2 w-2 text-white' />
+            {loadingPayments ? (
+              <div className="col-span-4 py-6 text-center">
+                <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
+              </div>
+            ) : (
+              paymentMethods.map((pm) => (
+                <button
+                  key={pm.id}
+                  onClick={() => {
+                    setPaymentId(pm.id);
+                    if (errors.payment)
+                      setErrors((er) => ({ ...er, payment: "" }));
+                  }}
+                  className={cn(
+                    "relative flex flex-col items-center gap-1 border p-2 transition-colors",
+                    paymentId === pm.id
+                      ? "border-foreground bg-foreground/5"
+                      : "border-border hover:border-foreground/50",
+                  )}
+                >
+                  {paymentId === pm.id && (
+                    <span className='absolute right-0.5 top-0.5 flex h-3 w-3 items-center justify-center bg-(--accent)'>
+                      <Check className='h-2 w-2 text-white' />
+                    </span>
+                  )}
+                  {pm.logoSrc ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={pm.logoSrc}
+                      alt={pm.label}
+                      className='h-7 w-auto max-w-[48px] object-contain'
+                    />
+                  ) : (
+                    <div className="h-7 flex items-center justify-center">
+                      <span className="text-[10px] font-bold text-muted-foreground">{pm.label}</span>
+                    </div>
+                  )}
+                  <span className='text-[9px] font-bold uppercase leading-none text-foreground'>
+                    {pm.label}
                   </span>
-                )}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={pm.logoSrc}
-                  alt={pm.label}
-                  className='h-7 w-auto max-w-[48px] object-contain'
-                />
-                <span className='text-[9px] font-bold uppercase leading-none text-foreground'>
-                  {pm.label}
-                </span>
-                <span className='text-[8px] font-light leading-none text-muted-foreground'>
-                  {pm.typeLabel}
-                </span>
-              </button>
-            ))}
+                  <span className='text-[8px] font-light leading-none text-muted-foreground'>
+                    {pm.typeLabel}
+                  </span>
+                </button>
+              ))
+            )}
           </div>
 
           {selectedPayment && (

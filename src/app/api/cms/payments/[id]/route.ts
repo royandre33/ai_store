@@ -32,3 +32,29 @@ export async function PUT(
 
   return NextResponse.json(method);
 }
+
+export async function DELETE(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await requireAdmin();
+  if (!session)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  try {
+    const { id } = await params;
+
+    await prisma.paymentStep.deleteMany({ where: { paymentMethodId: id } });
+
+    await prisma.paymentMethod.delete({
+      where: { id },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error: unknown) {
+    console.error("DELETE /api/cms/payments/[id] error:", error);
+    const message = error instanceof Error ? error.message : "Failed to delete payment method";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+

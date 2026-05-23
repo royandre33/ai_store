@@ -27,19 +27,20 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur-sm">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-        {/* Logo */}
-        {logoUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={logoUrl}
-            alt={siteName}
-            className="h-8 w-auto object-contain"
-          />
-        ) : (
+        {/* Logo + Site Name */}
+        <div className="flex items-center gap-3">
+          {logoUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={logoUrl}
+              alt={siteName}
+              className="h-8 w-auto object-contain"
+            />
+          )}
           <span className="font-condensed text-xl tracking-[0.08em] text-foreground uppercase">
             {siteName}
           </span>
-        )}
+        </div>
 
         {/* Desktop nav links */}
         <nav className="hidden gap-8 md:flex">

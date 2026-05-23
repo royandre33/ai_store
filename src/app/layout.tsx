@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import { Barlow, Barlow_Condensed, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/toaster";
 import { AosInit } from "@/components/aos-init";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -116,30 +115,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id" suppressHydrationWarning>
+    <html lang="id">
       <body
         className={`${barlow.variable} ${barlowCondensed.variable} ${geistMono.variable} antialiased`}
       >
-        {/* Anti-FOUC: apply dark class before first paint */}
-        <Script
-          id="theme-init"
-          strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('theme');var dark=t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.documentElement.classList.add('dark')}catch(e){}})()`,
-          }}
-        />
         {/* JSON-LD structured data */}
         <Script
           id="json-ld"
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        <ThemeProvider>
-          <AosInit />
-          {children}
-          <Toaster />
-          <SpeedInsights />
-        </ThemeProvider>
+        <AosInit />
+        {children}
+        <Toaster />
+        <SpeedInsights />
       </body>
     </html>
   );

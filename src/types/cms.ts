@@ -55,6 +55,7 @@ export interface CmsPaymentMethod {
 export interface CmsSiteSettings {
   id: number;
   siteName: string;
+  logoUrl: string | null;
   footerTagline: string;
   adminWhatsapp: string;
 }

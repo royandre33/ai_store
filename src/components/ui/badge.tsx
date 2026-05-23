@@ -8,8 +8,8 @@ const variantClasses: Record<BadgeVariant, string> = {
   secondary:   "bg-muted text-muted-foreground",
   outline:     "border border-border bg-transparent text-foreground",
   destructive: "bg-destructive/10 text-destructive border border-destructive/20",
-  success:     "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400",
-  warning:     "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400",
+  success:     "bg-emerald-100 text-emerald-700",
+  warning:     "bg-amber-100 text-amber-700",
 };
 
 export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {

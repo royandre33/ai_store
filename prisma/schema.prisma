@@ -11,10 +11,11 @@ datasource db {
 }
 
 model SiteSettings {
-  id            Int    @id @default(1)
-  siteName      String @default("AI Store")
-  footerTagline String @default("Premium AI Tools Terpercaya · Proses Cepat · Support Ramah")
-  adminWhatsapp String @default("6289530571642")
+  id            Int     @id @default(1)
+  siteName      String  @default("AI Store")
+  logoUrl       String?
+  footerTagline String  @default("Premium AI Tools Terpercaya · Proses Cepat · Support Ramah")
+  adminWhatsapp String  @default("6289530571642")
 }
 
 model HeroContent {

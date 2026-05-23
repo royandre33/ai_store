@@ -21,14 +21,24 @@ export function FooterSection() {
   const footerTagline =
     settings?.footerTagline ??
     "Premium AI Tools Terpercaya · Proses Cepat · Support Ramah";
+  const logoUrl = settings?.logoUrl ?? null;
 
   return (
     <footer className="border-t border-border bg-background px-6 py-8">
       <div className="mx-auto flex max-w-7xl flex-col gap-5">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <span className="font-condensed text-sm uppercase tracking-[0.12em] text-foreground">
-            {siteName}
-          </span>
+          {logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={logoUrl}
+              alt={siteName}
+              className="h-6 w-auto object-contain"
+            />
+          ) : (
+            <span className="font-condensed text-sm uppercase tracking-[0.12em] text-foreground">
+              {siteName}
+            </span>
+          )}
           <p className="text-xs font-light text-muted-foreground">
             {footerTagline}
           </p>

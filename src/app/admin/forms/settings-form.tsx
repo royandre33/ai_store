@@ -3,10 +3,12 @@
 import { useState, useEffect } from "react";
 import { Loader2, Save } from "lucide-react";
 import toast from "react-hot-toast";
+import { ImageUpload } from "@/components/admin/image-upload";
 
 export function SettingsForm() {
   const [data, setData] = useState({
     siteName: "",
+    logoUrl: "",
     footerTagline: "",
     adminWhatsapp: "",
   });
@@ -18,7 +20,12 @@ export function SettingsForm() {
       .then((res) => res.json())
       .then((d) => {
         if (d && !d.error) {
-          setData(d);
+          setData({
+            siteName: d.siteName ?? "",
+            logoUrl: d.logoUrl ?? "",
+            footerTagline: d.footerTagline ?? "",
+            adminWhatsapp: d.adminWhatsapp ?? "",
+          });
         }
         setLoading(false);
       });
@@ -31,7 +38,10 @@ export function SettingsForm() {
       const res = await fetch("/api/cms/settings", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          ...data,
+          logoUrl: data.logoUrl || null,
+        }),
       });
       if (res.ok) toast.success("Pengaturan berhasil disimpan");
       else toast.error("Gagal menyimpan pengaturan");
@@ -64,6 +74,22 @@ export function SettingsForm() {
             required
           />
         </div>
+
+        {/* Logo Upload */}
+        <div>
+          <label className="mb-2 block text-[10px] font-bold uppercase tracking-[0.15em] text-foreground">
+            Logo Situs
+          </label>
+          <p className="mb-3 text-[10px] text-muted-foreground">
+            Upload logo untuk ditampilkan di navbar dan footer. Jika kosong, nama situs akan digunakan sebagai teks.
+          </p>
+          <ImageUpload
+            label="Upload Logo"
+            currentUrl={data.logoUrl || undefined}
+            onUpload={(url) => setData({ ...data, logoUrl: url })}
+          />
+        </div>
+
         <div>
           <label className="mb-2 block text-[10px] font-bold uppercase tracking-[0.15em] text-foreground">
             Tagline Footer

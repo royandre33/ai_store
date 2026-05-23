@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { ShoppingCart } from "lucide-react";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useCartStore } from "@/store/cart-store";
 
 const navLinks = [
@@ -14,20 +13,33 @@ const navLinks = [
 export function Navbar() {
   const { items, openCart } = useCartStore();
   const [siteName, setSiteName] = useState("AI STORE");
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/cms/settings")
       .then((r) => r.json())
-      .then((data) => { if (data?.siteName) setSiteName(data.siteName); });
+      .then((data) => {
+        if (data?.siteName) setSiteName(data.siteName);
+        if (data?.logoUrl) setLogoUrl(data.logoUrl);
+      });
   }, []);
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur-sm">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
         {/* Logo */}
-        <span className="font-condensed text-xl tracking-[0.08em] text-foreground uppercase">
-          {siteName}
-        </span>
+        {logoUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={logoUrl}
+            alt={siteName}
+            className="h-8 w-auto object-contain"
+          />
+        ) : (
+          <span className="font-condensed text-xl tracking-[0.08em] text-foreground uppercase">
+            {siteName}
+          </span>
+        )}
 
         {/* Desktop nav links */}
         <nav className="hidden gap-8 md:flex">
@@ -44,7 +56,6 @@ export function Navbar() {
 
         {/* Right side */}
         <div className="flex items-center gap-3">
-          <ThemeToggle />
           <button
             onClick={openCart}
             className="relative flex h-10 items-center gap-2 border border-border bg-transparent px-4 text-xs font-semibold uppercase tracking-[0.12em] text-foreground transition-colors hover:border-foreground"

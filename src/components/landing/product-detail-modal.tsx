@@ -151,7 +151,7 @@ export function ProductDetailModal({
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className='fixed inset-0 z-50 bg-black/80 data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0' />
         <DialogPrimitive.Content
-          className='fixed left-1/2 top-1/2 z-50 w-full max-w-2xl -translate-x-1/2 -translate-y-1/2 border border-border bg-card duration-200 data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95'
+          className='fixed left-0 top-0 z-50 w-full h-dvh border-0 bg-card duration-200 data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 translate-x-0 translate-y-0 sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-full sm:max-w-2xl sm:h-auto sm:max-h-[calc(100dvh-2rem)] sm:border sm:border-border flex flex-col overflow-hidden shadow-2xl'
           aria-describedby={undefined}
         >
           <DialogPrimitive.Title className='sr-only'>
@@ -159,9 +159,17 @@ export function ProductDetailModal({
           </DialogPrimitive.Title>
 
           {/* AI brand stripe at top */}
-          <div className='ai-stripe w-full' />
+          <div className='ai-stripe w-full shrink-0' />
 
-          <div className='grid sm:grid-cols-2'>
+          {/* Close button (sticky, fixed at top-right relative to DialogContent) */}
+          <DialogPrimitive.Close className='absolute right-4 top-[calc(1rem+env(safe-area-inset-top))] sm:top-4 z-50 rounded-full bg-black/40 p-2 text-white hover:bg-black/60 backdrop-blur-sm sm:bg-transparent sm:text-muted-foreground sm:hover:text-foreground sm:hover:bg-transparent transition-colors focus:outline-none'>
+            <X className='h-4 w-4' />
+            <span className='sr-only'>Close</span>
+          </DialogPrimitive.Close>
+
+          {/* Scrollable contents */}
+          <div className='flex-1 overflow-y-auto min-h-0'>
+            <div className='grid sm:grid-cols-2'>
             {/* Left — thumbnail */}
             <div
               className={cn(
@@ -227,7 +235,7 @@ export function ProductDetailModal({
             </div>
 
             {/* Right — details */}
-            <div className='flex flex-col p-6'>
+            <div className='flex flex-col p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:pb-6'>
               <div className='flex items-start justify-between gap-2'>
                 <div>
                   <p className='mb-1 text-[10px] font-bold uppercase tracking-[0.15em] text-(--accent)'>
@@ -245,9 +253,8 @@ export function ProductDetailModal({
                     <span>{product.sold} Terjual</span>
                   </div>
                 </div>
-                <DialogPrimitive.Close className='shrink-0 p-1 text-muted-foreground hover:text-foreground'>
-                  <X className='h-4 w-4' />
-                </DialogPrimitive.Close>
+                {/* Spacer to prevent title text from overlapping with the floating close button */}
+                <div className='w-8 h-8 shrink-0 sm:block hidden' />
               </div>
 
               <div className='my-4 h-px bg-border' />
@@ -314,6 +321,7 @@ export function ProductDetailModal({
                 </a>
               </div>
             </div>
+          </div>
           </div>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>

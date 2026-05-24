@@ -212,7 +212,7 @@ export function ProductDetailModal({
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className='fixed inset-0 z-50 bg-black/80 data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0' />
         <DialogPrimitive.Content
-          className='fixed left-0 top-0 z-50 w-full h-dvh border-0 bg-card duration-200 data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 translate-x-0 translate-y-0 sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-full sm:max-w-2xl sm:h-auto sm:max-h-[calc(100dvh-2rem)] sm:border sm:border-border flex flex-col overflow-hidden shadow-2xl'
+          className='fixed left-0 top-0 z-50 w-full h-dvh border-0 bg-card duration-200 data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 translate-x-0 translate-y-0 sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-full sm:max-w-4xl sm:h-auto sm:max-h-[calc(100dvh-2rem)] sm:border sm:border-border flex flex-col overflow-hidden shadow-2xl'
           aria-describedby={undefined}
         >
           <DialogPrimitive.Title className='sr-only'>
@@ -350,7 +350,7 @@ export function ProductDetailModal({
 
               <div className='my-4 h-px bg-border' />
 
-              <p className='text-sm font-light leading-relaxed text-muted-foreground'>
+              <p className='text-sm font-light leading-relaxed text-muted-foreground whitespace-pre-wrap'>
                 {product.description}
               </p>
 

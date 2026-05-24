@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, X, Star } from "lucide-react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
@@ -26,6 +26,12 @@ export function ProductDetailModal({
   const [zoomOrigin, setZoomOrigin] = useState("center center");
   const { addItem, items, openCartToCheckout } = useCartStore();
   const [adminWa, setAdminWa] = useState("6289530571642");
+
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
+  const touchEndX = useRef<number | null>(null);
+  const touchEndY = useRef<number | null>(null);
+  const hasSwiped = useRef<boolean>(false);
 
   useEffect(() => {
     fetch("/api/cms/settings")
@@ -128,6 +134,10 @@ export function ProductDetailModal({
   };
 
   const handleImageClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (hasSwiped.current) {
+      hasSwiped.current = false;
+      return;
+    }
     if (isZoomed) {
       setIsZoomed(false);
     } else {
@@ -141,9 +151,60 @@ export function ProductDetailModal({
     updateZoomOrigin(e);
   };
 
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (isZoomed || product.thumbnails.length <= 1) return;
+    const touch = e.touches[0];
+    touchStartX.current = touch.clientX;
+    touchStartY.current = touch.clientY;
+    touchEndX.current = touch.clientX;
+    touchEndY.current = touch.clientY;
+    hasSwiped.current = false;
+  };
+
   const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
-    if (!isZoomed) return;
-    updateZoomOrigin(e);
+    if (isZoomed) {
+      updateZoomOrigin(e);
+      return;
+    }
+    if (product.thumbnails.length <= 1) return;
+    const touch = e.touches[0];
+    touchEndX.current = touch.clientX;
+    touchEndY.current = touch.clientY;
+  };
+
+  const handleTouchEnd = () => {
+    if (isZoomed || product.thumbnails.length <= 1) return;
+    if (
+      touchStartX.current === null ||
+      touchStartY.current === null ||
+      touchEndX.current === null ||
+      touchEndY.current === null
+    ) {
+      return;
+    }
+
+    const diffX = touchStartX.current - touchEndX.current;
+    const diffY = touchStartY.current - touchEndY.current;
+
+    // Minimum distance of 50px for swiping and primary horizontal direction
+    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+      hasSwiped.current = true;
+      if (diffX > 0) {
+        // Swiped left -> next image
+        setImgIndex((i) => (i + 1) % product.thumbnails.length);
+      } else {
+        // Swiped right -> prev image
+        setImgIndex(
+          (i) => (i - 1 + product.thumbnails.length) % product.thumbnails.length,
+        );
+      }
+    }
+
+    // Reset touch variables
+    touchStartX.current = null;
+    touchStartY.current = null;
+    touchEndX.current = null;
+    touchEndY.current = null;
   };
 
   return (
@@ -173,24 +234,37 @@ export function ProductDetailModal({
             {/* Left — thumbnail */}
             <div
               className={cn(
-                "relative aspect-square w-full overflow-hidden bg-muted sm:aspect-auto select-none",
+                "relative aspect-square w-full overflow-hidden bg-muted sm:aspect-auto select-none touch-pan-y",
                 isZoomed ? "cursor-zoom-out" : "cursor-zoom-in",
               )}
               onClick={handleImageClick}
               onMouseMove={handleMouseMove}
+              onTouchStart={handleTouchStart}
               onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
             >
-              <Image
-                src={product.thumbnails[imgIndex]}
-                alt={`${product.name} ${imgIndex + 1}`}
-                fill
-                className='object-contain transition-transform duration-200 pointer-events-none'
+              <div
+                className='flex h-full w-full transition-transform duration-300 ease-out'
                 style={{
-                  transform: isZoomed ? "scale(2.2)" : "scale(1)",
-                  transformOrigin: zoomOrigin,
+                  transform: `translateX(-${imgIndex * 100}%)`,
                 }}
-                sizes='400px'
-              />
+              >
+                {product.thumbnails.map((thumb, idx) => (
+                  <div key={idx} className='relative h-full w-full shrink-0'>
+                    <Image
+                      src={thumb}
+                      alt={`${product.name} ${idx + 1}`}
+                      fill
+                      className='object-contain transition-transform duration-200 pointer-events-none'
+                      style={idx === imgIndex ? {
+                        transform: isZoomed ? "scale(2.2)" : "scale(1)",
+                        transformOrigin: zoomOrigin,
+                      } : undefined}
+                      sizes='400px'
+                    />
+                  </div>
+                ))}
+              </div>
               {!isZoomed && product.thumbnails.length > 1 && (
                 <>
                   <button

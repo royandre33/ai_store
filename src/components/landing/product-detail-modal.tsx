@@ -231,79 +231,96 @@ export function ProductDetailModal({
           {/* Scrollable contents */}
           <div className='flex-1 overflow-y-auto min-h-0'>
             <div className='grid sm:grid-cols-2'>
-            {/* Left — thumbnail */}
-            <div
-              className={cn(
-                "relative aspect-square w-full overflow-hidden bg-muted sm:aspect-auto select-none touch-pan-y",
-                isZoomed ? "cursor-zoom-out" : "cursor-zoom-in",
-              )}
-              onClick={handleImageClick}
-              onMouseMove={handleMouseMove}
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
-            >
+            {/* Left — thumbnail gallery */}
+            <div className='flex flex-col gap-2 bg-muted/10'>
+              {/* Main Image Slider */}
               <div
-                className='flex h-full w-full transition-transform duration-300 ease-out'
-                style={{
-                  transform: `translateX(-${imgIndex * 100}%)`,
-                }}
+                className={cn(
+                  "relative aspect-square w-full overflow-hidden bg-muted sm:aspect-auto sm:flex-1 sm:h-0 select-none touch-pan-y",
+                  isZoomed ? "cursor-zoom-out" : "cursor-zoom-in",
+                )}
+                onClick={handleImageClick}
+                onMouseMove={handleMouseMove}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
               >
-                {product.thumbnails.map((thumb, idx) => (
-                  <div key={idx} className='relative h-full w-full shrink-0'>
-                    <Image
-                      src={thumb}
-                      alt={`${product.name} ${idx + 1}`}
-                      fill
-                      className='object-contain transition-transform duration-200 pointer-events-none'
-                      style={idx === imgIndex ? {
-                        transform: isZoomed ? "scale(2.2)" : "scale(1)",
-                        transformOrigin: zoomOrigin,
-                      } : undefined}
-                      sizes='400px'
-                    />
-                  </div>
-                ))}
-              </div>
-              {!isZoomed && product.thumbnails.length > 1 && (
-                <>
-                  <button
-                    onClick={prevImg}
-                    className='absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 p-1.5 text-white hover:bg-black/80'
-                    aria-label='Sebelumnya'
-                  >
-                    <ChevronLeft className='h-4 w-4' />
-                  </button>
-                  <button
-                    onClick={nextImg}
-                    className='absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 p-1.5 text-white hover:bg-black/80'
-                    aria-label='Berikutnya'
-                  >
-                    <ChevronRight className='h-4 w-4' />
-                  </button>
-                  <div className='absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1'>
-                    {product.thumbnails.map((_, i) => (
-                      <button
-                        key={i}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setIsZoomed(false);
-                          setImgIndex(i);
-                        }}
-                        className={cn(
-                          "h-1 transition-all",
-                          i === imgIndex ? "w-6 bg-white" : "w-2 bg-white/40",
-                        )}
+                <div
+                  className='flex h-full w-full transition-transform duration-300 ease-out'
+                  style={{
+                    transform: `translateX(-${imgIndex * 100}%)`,
+                  }}
+                >
+                  {product.thumbnails.map((thumb, idx) => (
+                    <div key={idx} className='relative h-full w-full shrink-0'>
+                      <Image
+                        src={thumb}
+                        alt={`${product.name} ${idx + 1}`}
+                        fill
+                        className='object-contain transition-transform duration-200 pointer-events-none'
+                        style={idx === imgIndex ? {
+                          transform: isZoomed ? "scale(2.2)" : "scale(1)",
+                          transformOrigin: zoomOrigin,
+                        } : undefined}
+                        sizes='400px'
                       />
-                    ))}
+                    </div>
+                  ))}
+                </div>
+                {!isZoomed && product.thumbnails.length > 1 && (
+                  <>
+                    <button
+                      onClick={prevImg}
+                      className='absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 p-1.5 text-white hover:bg-black/80 z-10'
+                      aria-label='Sebelumnya'
+                    >
+                      <ChevronLeft className='h-4 w-4' />
+                    </button>
+                    <button
+                      onClick={nextImg}
+                      className='absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 p-1.5 text-white hover:bg-black/80 z-10'
+                      aria-label='Berikutnya'
+                    >
+                      <ChevronRight className='h-4 w-4' />
+                    </button>
+                  </>
+                )}
+                {product.badge && (
+                  <div className='absolute left-0 top-0 pointer-events-none z-10'>
+                    <span className='bg-(--accent) px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-white'>
+                      {product.badge}
+                    </span>
                   </div>
-                </>
-              )}
-              {product.badge && (
-                <div className='absolute left-0 top-0 pointer-events-none'>
-                  <span className='bg-(--accent) px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-white'>
-                    {product.badge}
-                  </span>
+                )}
+              </div>
+
+              {/* Small Thumbnails Row */}
+              {product.thumbnails.length > 1 && (
+                <div className='flex gap-2 px-6 pb-2 pt-1 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] sm:px-4'>
+                  {product.thumbnails.map((thumb, idx) => (
+                    <button
+                      key={idx}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsZoomed(false);
+                        setImgIndex(idx);
+                      }}
+                      className={cn(
+                        "relative h-12 w-12 shrink-0 overflow-hidden border bg-card transition-all sm:h-14 sm:w-14",
+                        idx === imgIndex
+                          ? "border-primary ring-1 ring-primary"
+                          : "border-border hover:border-foreground/50",
+                      )}
+                    >
+                      <Image
+                        src={thumb}
+                        alt={`${product.name} thumbnail ${idx + 1}`}
+                        fill
+                        className='object-contain p-1'
+                        sizes='60px'
+                      />
+                    </button>
+                  ))}
                 </div>
               )}
             </div>

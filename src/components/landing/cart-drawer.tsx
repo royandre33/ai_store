@@ -753,6 +753,7 @@ interface InvoiceShareImageProps {
     price: number;
   }>;
   total: number;
+  siteName: string;
 }
 
 const InvoiceShareImage = forwardRef<HTMLDivElement, InvoiceShareImageProps>(
@@ -766,6 +767,7 @@ const InvoiceShareImage = forwardRef<HTMLDivElement, InvoiceShareImageProps>(
       paymentMethodLabel,
       items,
       total,
+      siteName,
     },
     ref,
   ) {
@@ -778,7 +780,7 @@ const InvoiceShareImage = forwardRef<HTMLDivElement, InvoiceShareImageProps>(
         {/* Header */}
         <div className="mb-6 border-b border-white/20 pb-4">
           <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/60">
-            Home AI Official
+            {siteName}
           </p>
           <p className="mt-2 text-xs font-light text-white/80">
             Premium AI Tool Subscription Store
@@ -870,7 +872,7 @@ const InvoiceShareImage = forwardRef<HTMLDivElement, InvoiceShareImageProps>(
             Konfirmasi pembayaran via WhatsApp admin
           </p>
           <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-white/70">
-            Home AI Official © 2025
+            {siteName} © {new Date().getFullYear()}
           </p>
         </div>
       </div>
@@ -880,7 +882,7 @@ const InvoiceShareImage = forwardRef<HTMLDivElement, InvoiceShareImageProps>(
 
 // ── Invoice view ──────────────────────────────────────────────────────────────
 
-function InvoiceView({ adminWhatsapp }: { adminWhatsapp: string }) {
+function InvoiceView({ adminWhatsapp, siteName }: { adminWhatsapp: string; siteName: string }) {
   const { items, invoiceNumber, invoiceTime, buyerInfo, backToCart } =
     useCartStore();
   const total = items.reduce((sum, item) => sum + item.price, 0);
@@ -890,7 +892,7 @@ function InvoiceView({ adminWhatsapp }: { adminWhatsapp: string }) {
 
   const waMessage = encodeURIComponent(
     [
-      `Halo Admin Home AI Official, saya sudah melakukan pembayaran dan ingin konfirmasi.`,
+      `Halo Admin ${siteName}, saya sudah melakukan pembayaran dan ingin konfirmasi.`,
       ``,
       `Order ID: ${invoiceNumber}`,
       `Nama: ${buyerInfo?.name ?? "-"}`,
@@ -930,7 +932,7 @@ function InvoiceView({ adminWhatsapp }: { adminWhatsapp: string }) {
       if (navigator.share && navigator.canShare({ files: [file] })) {
         await navigator.share({
           title: `Invoice ${invoiceNumber}`,
-          text: `Invoice pembelian Home AI Official - ${invoiceNumber}`,
+          text: `Invoice pembelian ${siteName} - ${invoiceNumber}`,
           files: [file],
         });
       } else {
@@ -948,7 +950,7 @@ function InvoiceView({ adminWhatsapp }: { adminWhatsapp: string }) {
     } finally {
       setIsCapturing(false);
     }
-  }, [invoiceNumber]);
+  }, [invoiceNumber, siteName]);
 
   const downloadInvoice = useCallback(async () => {
     if (!invoiceRef.current) return;
@@ -1151,6 +1153,7 @@ function InvoiceView({ adminWhatsapp }: { adminWhatsapp: string }) {
             paymentMethodLabel={buyerInfo.paymentMethodLabel}
             items={items}
             total={total}
+            siteName={siteName}
           />
         )}
       </div>
@@ -1163,11 +1166,15 @@ function InvoiceView({ adminWhatsapp }: { adminWhatsapp: string }) {
 export function CartDrawer() {
   const { isOpen, view, closeCart } = useCartStore();
   const [adminWhatsapp, setAdminWhatsapp] = useState("6289530571642");
+  const [siteName, setSiteName] = useState("AI Store");
 
   useEffect(() => {
     fetch("/api/cms/settings")
       .then((r) => r.json())
-      .then((data) => { if (data?.adminWhatsapp) setAdminWhatsapp(data.adminWhatsapp); });
+      .then((data) => {
+        if (data?.adminWhatsapp) setAdminWhatsapp(data.adminWhatsapp);
+        if (data?.siteName) setSiteName(data.siteName);
+      });
   }, []);
 
   return (
@@ -1187,7 +1194,7 @@ export function CartDrawer() {
             Keranjang Belanja
           </DialogPrimitive.Title>
           {view === "invoice" ? (
-            <InvoiceView adminWhatsapp={adminWhatsapp} />
+            <InvoiceView adminWhatsapp={adminWhatsapp} siteName={siteName} />
           ) : view === "checkout" ? (
             <CheckoutFormView />
           ) : (

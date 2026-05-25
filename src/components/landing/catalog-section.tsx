@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { CatalogClient } from "./catalog-client";
 import AOS from "aos";
-import type { CmsProduct, CmsSiteSettings } from "@/types/cms";
+import type { CmsProduct } from "@/types/cms";
+import { useSettings } from "@/hooks/use-settings";
 
 function CatalogSkeleton() {
   return (
@@ -40,15 +41,12 @@ function CatalogSkeleton() {
 
 export function CatalogSection() {
   const [products, setProducts] = useState<CmsProduct[]>([]);
-  const [siteName, setSiteName] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const { settings } = useSettings();
+
+  const siteName = settings?.siteName || "";
 
   useEffect(() => {
-    fetch("/api/cms/settings")
-      .then((r) => r.json())
-      .then((data: CmsSiteSettings) => {
-        if (data?.siteName) setSiteName(data.siteName);
-      });
     fetch("/api/cms/products")
       .then((r) => r.json())
       .then((data) => {

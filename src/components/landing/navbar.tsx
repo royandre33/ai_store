@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { ShoppingCart } from "lucide-react";
 import { useCartStore } from "@/store/cart-store";
+import { useSettings } from "@/hooks/use-settings";
 
 const navLinks = [
   { label: "Beranda", href: "#hero" },
@@ -12,17 +12,10 @@ const navLinks = [
 
 export function Navbar() {
   const { items, openCart } = useCartStore();
-  const [siteName, setSiteName] = useState("AI STORE");
-  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const { settings } = useSettings();
 
-  useEffect(() => {
-    fetch("/api/cms/settings")
-      .then((r) => r.json())
-      .then((data) => {
-        if (data?.siteName) setSiteName(data.siteName);
-        if (data?.logoUrl) setLogoUrl(data.logoUrl);
-      });
-  }, []);
+  const siteName = settings?.siteName || "AI STORE";
+  const logoUrl = settings?.logoUrl || null;
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur-sm">

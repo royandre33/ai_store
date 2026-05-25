@@ -26,6 +26,7 @@ import type { CartItem, BuyerInfo } from "@/store/cart-store";
 import { PAYMENT_METHODS } from "@/data/payment-methods";
 import type { PaymentMethod } from "@/data/payment-methods";
 import type { CmsPaymentMethod } from "@/types/cms";
+import { useSettings } from "@/hooks/use-settings";
 
 type CombinedPaymentMethod = PaymentMethod & Partial<Omit<CmsPaymentMethod, "steps">> & {
   steps?: Array<string | { text: string }>;
@@ -1165,17 +1166,10 @@ function InvoiceView({ adminWhatsapp, siteName }: { adminWhatsapp: string; siteN
 
 export function CartDrawer() {
   const { isOpen, view, closeCart } = useCartStore();
-  const [adminWhatsapp, setAdminWhatsapp] = useState("6289530571642");
-  const [siteName, setSiteName] = useState("AI Store");
+  const { settings } = useSettings(isOpen);
 
-  useEffect(() => {
-    fetch("/api/cms/settings")
-      .then((r) => r.json())
-      .then((data) => {
-        if (data?.adminWhatsapp) setAdminWhatsapp(data.adminWhatsapp);
-        if (data?.siteName) setSiteName(data.siteName);
-      });
-  }, []);
+  const adminWhatsapp = settings?.adminWhatsapp || "6289530571642";
+  const siteName = settings?.siteName || "AI Store";
 
   return (
     <DialogPrimitive.Root

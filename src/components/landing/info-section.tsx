@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import AOS from "aos";
-import type { CmsSpecCell, CmsSiteSettings } from "@/types/cms";
+import type { CmsSpecCell } from "@/types/cms";
+import { useSettings } from "@/hooks/use-settings";
 
 function InfoSkeleton() {
   return (
@@ -27,15 +28,12 @@ function InfoSkeleton() {
 
 export function InfoSection() {
   const [specs, setSpecs] = useState<CmsSpecCell[]>([]);
-  const [siteName, setSiteName] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const { settings } = useSettings();
+
+  const siteName = settings?.siteName || "";
 
   useEffect(() => {
-    fetch("/api/cms/settings")
-      .then((r) => r.json())
-      .then((data: CmsSiteSettings) => {
-        if (data?.siteName) setSiteName(data.siteName);
-      });
     fetch("/api/cms/specs")
       .then((r) => r.json())
       .then((data) => {

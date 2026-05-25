@@ -2,16 +2,14 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import type { CmsSiteSettings, CmsPaymentMethod } from "@/types/cms";
+import type { CmsPaymentMethod } from "@/types/cms";
+import { useSettings } from "@/hooks/use-settings";
 
 export function FooterSection() {
-  const [settings, setSettings] = useState<CmsSiteSettings | null>(null);
+  const { settings } = useSettings();
   const [paymentMethods, setPaymentMethods] = useState<CmsPaymentMethod[]>([]);
 
   useEffect(() => {
-    fetch("/api/cms/settings")
-      .then((r) => r.json())
-      .then(setSettings);
     fetch("/api/cms/payments")
       .then((r) => r.json())
       .then(setPaymentMethods);

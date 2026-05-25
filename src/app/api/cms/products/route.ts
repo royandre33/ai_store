@@ -4,7 +4,10 @@ import { requireAdmin } from "@/lib/session";
 
 export async function GET() {
   const products = await prisma.product.findMany({
-    orderBy: { order: "asc" },
+    orderBy: [
+      { sold: "desc" },
+      { order: "asc" },
+    ],
     include: {
       thumbnails: { orderBy: { order: "asc" } },
       variants: { orderBy: { order: "asc" } },

@@ -27,6 +27,7 @@ import { PAYMENT_METHODS } from "@/data/payment-methods";
 import type { PaymentMethod } from "@/data/payment-methods";
 import type { CmsPaymentMethod } from "@/types/cms";
 import { useSettings } from "@/hooks/use-settings";
+import toast from "react-hot-toast";
 
 type CombinedPaymentMethod = PaymentMethod & Partial<Omit<CmsPaymentMethod, "steps">> & {
   steps?: Array<string | { text: string }>;
@@ -334,12 +335,19 @@ function CheckoutFormView() {
     if (!wa.trim()) newErrors.wa = "Nomor WhatsApp wajib diisi";
     else if (!/^0[0-9]{8,12}$/.test(wa.trim()))
       newErrors.wa = "Nomor tidak valid — gunakan format 08xxxxxxxxxx (9–13 digit)";
+    if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))
+      newErrors.email = "Format email tidak valid";
     if (!paymentId) newErrors.payment = "Pilih metode pembayaran";
-    if (!proofFile) newErrors.proof = "Bukti pembayaran wajib diupload";
+    if (errors.proof) {
+      newErrors.proof = errors.proof;
+    } else if (!proofFile) {
+      newErrors.proof = "Bukti pembayaran wajib diupload";
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       console.log(newErrors);
+      toast.error(Object.values(newErrors)[0]);
       return;
     }
 
@@ -462,7 +470,8 @@ function CheckoutFormView() {
               type='tel'
               value={wa}
               onChange={(e) => {
-                setWa(e.target.value);
+                const numericValue = e.target.value.replace(/[^0-9]/g, "");
+                setWa(numericValue);
                 if (errors.wa) setErrors((er) => ({ ...er, wa: "" }));
               }}
               placeholder='08xxxxxxxxxx'
@@ -478,15 +487,20 @@ function CheckoutFormView() {
             </p>
           </FormField>
 
-          <FormField label='Email (Opsional)'>
+          <FormField label='Email (Opsional)' error={errors.email}>
             <input
               type='email'
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (errors.email) setErrors((er) => ({ ...er, email: "" }));
+              }}
               placeholder='email@example.com'
               className={cn(
                 INPUT_BASE,
-                "border-border focus:border-foreground",
+                errors.email
+                  ? "border-destructive"
+                  : "border-border focus:border-foreground",
               )}
             />
           </FormField>
